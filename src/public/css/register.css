@@ -1,0 +1,105 @@
+html,
+body {
+    overflow: hidden;
+}
+
+.main {
+    max-width: 1500px;
+    background-color: #dddddd;
+    height: 680px;
+}
+
+.main__inner {
+    text-align: center;
+    padding-top: 30px;
+}
+
+.main__title-p {
+    font-size: 20px;
+}
+
+.main__name {
+    margin-bottom: 20px;
+}
+
+.main__name input {
+    width: 350px;
+    height: 40px;
+    border: 1px solid #aaaaaa;
+    border-radius: 3px;
+    padding-left: 10px;
+}
+
+.main__email {
+    margin-bottom: 20px;
+}
+
+.main__email input {
+    width: 350px;
+    height: 40px;
+    border: 1px solid #aaaaaa;
+    border-radius: 3px;
+    padding-left: 10px;
+}
+
+.main__password {
+    margin-bottom: 20px;
+}
+
+.main__password input {
+    width: 350px;
+    height: 40px;
+    border: 1px solid #aaaaaa;
+    border-radius: 3px;
+    padding-left: 10px;
+}
+
+.main__check {
+    margin-bottom: 20px;
+}
+
+.main__check input {
+    width: 350px;
+    height: 40px;
+    border: 1px solid #aaaaaa;
+    border-radius: 3px;
+    padding-left: 10px;
+}
+
+.button {
+    margin-bottom: 30px;
+}
+
+.button__submit {
+    width: 350px;
+    height: 40px;
+    border: 1px solid #aaaaaa;
+    border-radius: 3px;
+    padding-left: 10px;
+    background-color: blue;
+    color: #fff;
+    font-size: 13px;
+}
+
+.login__p {
+    color: #aaaaaa;
+}
+
+.login__button {
+    color: blue;
+    text-decoration: none;
+}
+
+.footer_title {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.error {
+    color: red
+}
+
+.error-title {
+    text-align: center;
+    color: red;
+}

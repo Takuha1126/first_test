@@ -1,0 +1,72 @@
+html,
+body {
+    overflow: hidden;
+}
+
+.main {
+    max-width: 1500px;
+    background-color: #dddddd;
+    height: 680px;
+}
+
+.main__inner {
+    text-align: center;
+    padding-top: 70px;
+}
+
+.main__title-ttl {
+    font-size: 20px;
+}
+
+.main__item-email {
+    margin-bottom: 20px;
+}
+
+.main__item-email input {
+    width: 350px;
+    height: 40px;
+    border: 1px solid #aaaaaa;
+    border-radius: 3px;
+    padding-left: 10px;
+}
+
+.main__item-password {
+    margin-bottom: 20px;
+}
+
+.main__item-password input {
+    width: 350px;
+    height: 40px;
+    border: 1px solid #aaaaaa;
+    border-radius: 3px;
+    padding-left: 10px;
+}
+
+.button {
+    margin-bottom: 30px;
+}
+
+.button__submit {
+    width: 350px;
+    height: 40px;
+    border: 1px solid #aaaaaa;
+    border-radius: 3px;
+    padding-left: 10px;
+    background-color: blue;
+    color: #fff;
+    font-size: 13px;
+}
+
+.login__p {
+    color: #aaaaaa;
+}
+
+.login__button {
+    color: blue;
+    text-decoration: none;
+}
+
+.footer_title {
+    text-align: center;
+    margin-top: 10px;
+}

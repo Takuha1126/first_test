@@ -1,0 +1,37 @@
+
+
+.main {
+    max-width: 1500px;
+    background-color: #dddddd;
+    height: 670px;
+}
+
+.item {
+    max-width: 700px;
+    margin: 0 auto;
+}
+.item__about{
+    text-align: center;
+    padding-top: 30px;
+}
+
+.item__title {
+    text-align: center;
+}
+
+.item_ttl {
+    padding: 30px;
+    margin-left: 30px;
+}
+
+.item_ttl a {
+    font-size: 25px;
+    text-decoration: none;
+    color: #000;
+}
+
+
+.footer_title {
+    text-align: center;
+    margin-top: 5px;
+}
