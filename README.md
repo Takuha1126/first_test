@@ -16,4 +16,33 @@ Laravel,php
 
 #環境構築
 クローンする
-git clone
+git clone　https://github.com/Takuha1126/first_test.git
+
+ここではfirst_testでする
+
+cd　first_test
+
+Dockerで環境構築
+docker-compose up -d --build
+
+Laravelパッケージをインストール
+docker-compose exec php bash
+
+composer install
+
+.envファイルを作成
+cp .env.example .env
+.envファイルを書き換える
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=laravel_db
+DB_USERNAME=laravel_user
+DB_PASSWORD=laravel_pass
+
+アプリケーションキーを作成する
+php artisan key:generate
+
+テーブルの作成
+php artisan migrate:refresh
+
