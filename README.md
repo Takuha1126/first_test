@@ -16,7 +16,7 @@ Laravel,php
 
 #環境構築
 クローンする
-git clone　https://github.com/Takuha1126/first_test.git
+git clone https://github.com/Takuha1126/first_test.git
 
 ここではfirst_testでする
 
