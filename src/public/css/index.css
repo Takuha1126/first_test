@@ -1,13 +1,9 @@
 .main {
     max-width: 1500px;
-    background-color: #dddddd;
-    height: 680px;
-
 }
 
 .main__inner {
     text-align: center;
-
 }
 
 .main__title {
@@ -62,7 +58,3 @@
     font-size: 20px;
 }
 
-.footer_title {
-    text-align: center;
-    margin-top: 10px;
-}

@@ -19,7 +19,6 @@ class CreateWorksTable extends Migration
             $table->dateTime('start_time')->nullable();
             $table->dateTime('end_time')->nullable();
             $table->integer('work_time')->nullable();
-            $table->date('date')->nullable();
             $table->timestamps();
         });
     }

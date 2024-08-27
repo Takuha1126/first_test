@@ -20,11 +20,4 @@
             </div>
         </div>
     </div>
-    <footer class="footer">
-        <div class="footer_title">
-            <small class="footer__small">Atte,inc.</small>
-        </div>
-    </footer>
-</body>
-</html>
 @endsection

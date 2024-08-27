@@ -21,41 +21,29 @@ class RegisterRequest extends FormRequest
      *
      * @return array
      */
-    public function rules(Request $request)
+    public function rules()
     {
-            if (isset($request->name)){
         return [
-            'name' => 'required|string|max:191',
-            'email' => ['required|email|string|max:191',
-            Rule::unique('RegisterUser')->ignore($request->name,'name')],
-            'password' => 'string|min:8|max:191',
-            'password_confirmation' => 'string|confirmed'
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
         ];
-        }else {
-            return [
-            'name' => 'required|string|max:191',
-            'email' => ['required|email|unique:users|string|max:191'],
-            'password' => 'string|min:8|max:191',
-            'password_confirmation' => 'string|confirmed'
-            ];
-
-        }
     }
-    public function message() {
+
+    public function messages() {
         return [
             'name.required' => '名前を入力してください',
             'name.string' =>'名前を文字列で入力してください',
-            'name.max:191' => '名前を191文字以内で入力してください',
+            'name.max' => '名前を255文字以内で入力してください',
             'email.required' => 'メールアドレスを入力してください',
             'email.email' => 'メールアドレスをメール形式で入力してください',
             'email.unique' => 'メールアドレスがすでに使われています',
             'email.string' => 'メールアドレスを文字列で入力してください',
-            'email.max:191' => 'メールアドレスを191文字以内で入力してください',
-            'password.string' => 'パスワードを入力してください',
+            'email.max' => 'メールアドレスを255文字以内で入力してください',
+            'password.required' =>'パスワードを入力してください',
+            'password.string' => 'パスワードを文字列で入力してください',
             'password.min:8' => 'パスワードを8文字以上で入力してください',
-            'password.max:191' => 'パスワードを191文字以下で入力してください',
-            'password_confirmation.required' => '確認パスワードを入力してください',
-            'password_confirmation.confirmed' => 'パスワードが一致しません'
+            'password.confirmed' => 'パスワードが一致しません'
         ];
     }
 }

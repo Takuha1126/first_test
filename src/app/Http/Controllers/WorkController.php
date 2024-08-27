@@ -3,154 +3,170 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Work;
-use App\Models\Address;
 use App\Models\Stop;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\WorkRequest;
 
 class WorkController extends Controller
 {
     public function index() {
-        $user = Auth::user()->name;
-        $date = date('Y-m-d');
-        $totalBreakTime = $this->showTotalBreakTime();
-        return view('index',compact('user','date'));
-    }
-    public function create() {
         $user = Auth::user();
-
-        $oldStartTime = Work::where('user_id',$user->id)->latest()->first();
-
-        $oldDay= '';
-
-        if($oldStartTime) {
-            $oldTimePunchIn = new Carbon($oldStartTime->punchIn);
-            $oldDay = $oldTimePunchIn->startOfDay();
-        }
-        $today = Carbon::today();
-
-        if(($oldDay == $today) && (empty($oldStartTime->punchOut))) {
-            return redirect()->back()->with('message','出勤打刻済みです');
-        }
-
-        if($oldStartTime) {
-            $oldTimePunchOut = new Carbon($oldStartTime->punchOut);
-            $oldDay = $oldTimePunchOut->startOfDay();
-        }
-
-        if(($oldDay == $today)) {
-            return redirect()->back()->with('message','退勤打刻済みです');
-        }
-
-        $time = Work::create([
-            'user_id' => $user->id,
-            'start_time' => Carbon::now(),
-            'date' => now()->toDateString(),
-        ]);
-
-        return redirect()->back()->with('message','出勤打刻が押されました');
-
+        $date = Carbon::now();
+        $currentWork = Work::where('user_id', $user->id)
+                ->whereNull('end_time')
+                ->latest()
+                ->first();
+        return view('index',compact('user','date','currentWork'));
     }
 
-    public function store(Request $request){
+    public function startWork(Request $request)
+{
+    $user = Auth::user();
+
+    $existingWork = Work::where('user_id', $user->id)
+                    ->whereDate('start_time', now()->toDateString())
+                    ->whereNull('end_time')
+                    ->latest()
+                    ->first();
+
+    if ($existingWork) {
+        return redirect()->back()->with('error', '勤務はすでに開始されています。');
+    }
+
+
+    $existingEndWork = Work::where('user_id', $user->id)
+                        ->whereDate('start_time', now()->toDateString())
+                        ->whereNotNull('end_time')
+                        ->latest()
+                        ->first();
+
+    if ($existingEndWork) {
+        return redirect()->back()->with('error', '今日の勤務はすでに終了しています。');
+    }
+
+    Work::create([
+        'user_id' => $user->id,
+        'start_time' => now(),
+    ]);
+
+    return redirect()->back()->with('message', '勤怠開始しました');
+}
+
+    public function endWork(Request $request)
+    {
         $user = Auth::user();
-        $end_time = Work::where('user_id',$user->id)->latest()->first();
-        
-        if(!$end_time || !$end_time->start_time) {
-            return redirect()->back()->with('message','出勤打刻がされていません');
+
+        $work = Work::where('user_id', $user->id)
+            ->whereNotNull('start_time')
+            ->whereNull('end_time')
+            ->latest()
+            ->first();
+
+        if (!$work) {
+            return redirect()->back()->with('error', '勤務が開始されていません。');
         }
 
-        if(!$end_time->punchOut) {
-            $now = Carbon::now();
-            $start_time = new Carbon($end_time->start_time);
-            $stayTime = $start_time->diffInMinutes($now);
+        $currentBreak = Stop::where('user_id', $user->id)
+            ->whereNull('break_out')
+            ->latest()
+            ->first();
 
-            $end_time->update([
-                'end_time' => $now,
-                'work_time' => $stayTime
-            ]);
-            return redirect()->back()->with('message','退勤打刻が押されました');
-        } else {
-            $today = Carbon::now();
-            $day = $today->day;
-            $oldPunchOut = new Carbon();
-            $oldPunchOutDay = $oldPunchOut->day;
-            if($day == $oldPunchOutDay) {
-                return redirect()->back()->with('message','退勤済みです');
-            } else {
-                return redirect()->back()->with('message','出勤打刻が押されていません');
-            }
+        if ($currentBreak) {
+            return redirect()->back()->with('error', '休憩を終了してから勤務終了してください。');
         }
-        }
-        
 
+        $endTime = now();
+        $work->end_time = $endTime;
+
+        $startTime = Carbon::parse($work->start_time);
+        $totalWorkTime = $endTime->diffInMinutes($startTime);
+
+        $breaks = Stop::where('user_id', $user->id)
+            ->whereBetween('break_in', [$work->start_time, $endTime])
+            ->whereNotNull('break_out')
+            ->get();
+
+        $totalBreakTime = 0;
+        foreach ($breaks as $break) {
+            $breakIn = Carbon::parse($break->break_in);
+            $breakOut = Carbon::parse($break->break_out);
+            $breakDuration = $breakOut->diffInMinutes($breakIn);
+            $totalBreakTime += $breakDuration;
+        }
+
+        $work->work_time = $totalWorkTime - $totalBreakTime;
+        $work->save();
+
+        return redirect()->back()->with('message', '勤務終了しました。');
+    }
 
     public function breakIn(Request $request)
     {
         $user = Auth::user();
-        $break = Stop::where('user_id',$user->id)->latest()->first();
-        
-        if(!$break || $break->breakOut !== null) {
-            Stop::create([
-                'user_id' => $user->id,
-                'breakIn' => now(),
-                'date' => now()->toDateString(),
-            ]);
-            return redirect()->back()->with('message','休憩を開始します');
-        } else {
-            return redirect()->back()->with('error','すでに休憩を開始しています');
+        $currentWork = Work::where('user_id', $user->id)
+            ->whereNull('end_time')
+            ->latest()
+            ->first();
+
+        if (!$currentWork) {
+            return redirect()->back()->with('error', '勤務を開始していません。');
         }
+
+        Stop::create([
+            'user_id' => $user->id,
+            'work_id' => $currentWork->id,
+            'break_in' => now()->format('H:i:s'),
+            'break_out' => null,
+            'rest_time' => null,
+        ]);
+
+        return redirect()->back()->with('message', '休憩開始しました。');
     }
 
     public function breakOut(Request $request)
-{
-    $user = Auth::user();
-    $break = Stop::where('user_id', $user->id)->latest()->first();
-
-
-    if ($break && $break->breakIn !== null && $break->breakOut === null) {
-        $startTime = \Carbon\Carbon::parse($break->breakIn);
-        $breakOut = now();
-        $rest_time = $startTime->diffInSeconds($breakOut);
-
-        $break->update([
-            'breakOut' => $breakOut,
-            'rest_time' => $rest_time,
-
-        ]);
-        return redirect()->back()->with('message','休憩を終了しました');
-    }else{
-        return redirect()->back()->with('error','休憩を開始していません');
-    }
-
-
-}
-   
-    
-    
-
-    private function showTotalBreakTime()
     {
         $user = Auth::user();
-        $breaks = Stop::where('user_id', $user->id)
-            ->whereDate('created_at', today())
-            ->get();
 
-        $totalBreakTime = 0;
 
-        foreach ($breaks as $break) {
-            if ($break->breakIn && $break->breakOut) {
-                $startTime = \Carbon\Carbon::parse($break->breakIn);
-                $endTime = \Carbon\Carbon::parse($break->breakOut);
-                $totalBreakTime += $startTime->diffInSeconds($endTime);
-            }
+        $work = Work::where('user_id', $user->id)
+            ->whereNotNull('start_time')
+            ->whereNull('end_time')
+            ->latest()
+            ->first();
+
+        if (!$work) {
+            return redirect()->back()->with('error', '勤務開始を行ってから休憩を開始してください。');
         }
 
-        return $totalBreakTime;
+        $currentBreak = Stop::where('user_id', $user->id)
+            ->whereNull('break_out')
+            ->latest()
+            ->first();
+
+        if (!$currentBreak) {
+            return redirect()->back()->with('error', '休憩開始を行ってから休憩を終了してください。');
+        }
+
+        $breakOutTime = now();
+        $restTime = $this->calculateRestTime($currentBreak->break_in, $breakOutTime);
+
+        $currentBreak->update([
+            'break_out' => $breakOutTime->format('H:i:s'),
+            'rest_time' => $restTime,
+        ]);
+
+        return redirect()->back()->with('message', '休憩終了しました。');
     }
+
+    protected function calculateRestTime($breakIn, $breakOut)
+    {
+    $breakInTime = Carbon::parse($breakIn);
+    $breakOutTime = Carbon::parse($breakOut);
+
+    return $breakOutTime->diffInMinutes($breakInTime);
+    }
+
 }
 
 

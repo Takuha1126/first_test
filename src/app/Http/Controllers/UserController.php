@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Stop;
+use App\Models\Work;
 use Carbon\Carbon;
+
 
 class UserController extends Controller
 {
@@ -12,46 +14,56 @@ class UserController extends Controller
     public function index()
     {
         $users = User::paginate(10);
-        return view('users.index', ['users' => $users]);
+        $date = Carbon::now();
+        return view('users.index', [
+            'users' => $users,
+            'date' => $date,
+        ]);
     }
 
     public function show($userId)
-{
-    $user = User::findOrFail($userId);
-    $works = $user->works;
-    $stops = $user->stops;
+    {
+        $date = Carbon::now();
+        $user = User::findOrFail($userId);
 
-    // 休憩時間の合計を初期化
-    $total_rest_time_seconds = 0;
+        $works = Work::where('user_id', $userId)
+            ->orderBy('start_time', 'desc')
+            ->get();
 
-    foreach ($stops as $stop) {
-        // 休憩時間を合計
-        $total_rest_time_seconds += $stop->rest_time;
+        $workData = [];
+        foreach ($works as $work) {
+            $totalWorkTime = 0;
+            $totalBreakTime = 0;
+
+            if ($work->start_time && $work->end_time) {
+                $totalWorkTime = Carbon::parse($work->end_time)->diffInMinutes(Carbon::parse($work->start_time));
+            }
+
+            $breaks = Stop::where('user_id', $userId)
+                ->whereBetween('break_in', [$work->start_time, $work->end_time])
+                ->get();
+
+
+            foreach ($breaks as $break) {
+                if ($break->break_in && $break->break_out) {
+                    $totalBreakTime += Carbon::parse($break->break_out)->diffInMinutes(Carbon::parse($break->break_in));
+                }
+            }
+
+            $workData[] = [
+                'date' => Carbon::parse($work->start_time)->toDateString(),
+                'start_time' => $work->start_time,
+                'end_time' => $work->end_time,
+                'totalBreakTime' => $totalBreakTime,
+                'work_time' => $totalWorkTime - $totalBreakTime,
+            ];
+        }
+
+        return view('users.show', [
+            'user' => $user,
+            'workData' => $workData,
+            'date' => $date,
+        ]);
+
     }
-
-    // 各作業の作業時間を計算
-    foreach ($works as $work) {
-        $work->start_time = Carbon::parse($work->start_time)->format('H:i:s');
-        $work->end_time = Carbon::parse($work->end_time)->format('H:i:s');
-        
-        // 作業時間計算時に休憩時間を差し引く
-        $work_time_seconds = max(0, strtotime($work->end_time) - strtotime($work->start_time) - $total_rest_time_seconds);
-
-        $work_hours = floor($work_time_seconds / 3600);
-        $work_minutes = floor(($work_time_seconds % 3600) / 60);
-        $work_seconds = $work_time_seconds % 60;
-        $work->work_time = sprintf('%02d:%02d:%02d', $work_hours, $work_minutes, $work_seconds);
-    }
-
-    // 休憩時間の合計を時間と分に変換
-    $total_rest_hours = floor($total_rest_time_seconds / 3600);
-    $total_rest_minutes = floor(($total_rest_time_seconds % 3600) / 60);
-    $total_rest_seconds = $total_rest_time_seconds % 60;
-    $total_rest_time_formatted = sprintf('%02d:%02d:%02d', $total_rest_hours, $total_rest_minutes, $total_rest_seconds);
-
-    // ビューに変数を渡す
-    return view('users.show', compact('user', 'works', 'stops', 'total_rest_time_formatted', 'total_rest_time_seconds'));
 }
-}
-
-

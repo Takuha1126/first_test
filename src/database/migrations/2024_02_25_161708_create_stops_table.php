@@ -15,9 +15,10 @@ class CreateStopsTable extends Migration
     {
         Schema::create('stops', function (Blueprint $table) {
             $table->id();
-            $table->foreignID('user_id');
-            $table->dateTime('breakIn')->nullable();
-            $table->dateTime('breakOut')->nullable();
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('work_id');
+            $table->time('break_in')->nullable();
+            $table->time('break_out')->nullable();
             $table->integer('rest_time')->nullable();
             $table->timestamps();
         });

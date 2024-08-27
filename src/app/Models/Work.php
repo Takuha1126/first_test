@@ -8,9 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Work extends Model
 {
     use HasFactory;
-    protected $table = 'works';
-    protected $fillable = ['user_id','start_time','end_time','work_time','date'];
-    
+    protected $fillable = ['user_id','start_time','end_time','work_time'];
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -20,5 +18,5 @@ class Work extends Model
         return $this->hasMany(Stop::class);
     }
 
-    
+
 }

@@ -25,10 +25,10 @@ class LoginRequest extends FormRequest
     {
         return [
             'email' => 'required|email|max:191',
-            'password' => 'required|max:20', 
+            'password' => 'required|max:20',
         ];
     }
-    public function message()
+    public function messages()
     {
         return [
             'email.required' => 'メールアドレスを入力してください',

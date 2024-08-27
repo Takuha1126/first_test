@@ -1,34 +1,14 @@
-main {
-    max-width: 1500px;
-    background-color: #dddddd;
-    height: 680px;
+.container {
+    text-align: center;
 }
 
 .title {
-    text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: 30px;
     padding-top: 10px;
 }
 
-.calendar-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-}
-
-.pagination {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 200px;
-}
-
-.pagination a {
-    text-decoration: none;
-    color: black;
-    font-size: 24px;
-    cursor: pointer;
+.label {
+    text-align: center;
 }
 
 table {
@@ -36,12 +16,6 @@ table {
     border-collapse: collapse;
     margin: 5% auto;
     border-collapse: collapse;
-}
-
-table,
-th,
-td {
-    border: none;
 }
 
 th,
@@ -56,17 +30,7 @@ th {
     background-color: #f2f2f2;
 }
 
-.current-month {
-    text-align: center;
-    margin-bottom: 10px;
-}
-
-
-.other-month {
-    color: #ccc;
-}
-
-.footer_title {
-    text-align: center;
-    margin-top: 170px;
+td a{
+    text-decoration: none;
+    color: #000;
 }
